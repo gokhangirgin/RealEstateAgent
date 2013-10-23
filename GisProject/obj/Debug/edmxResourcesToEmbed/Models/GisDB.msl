@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="GisDBModelStoreContainer" CdmEntityContainer="GisDBEntities">
+    <EntitySetMapping Name="Image">
+      <EntityTypeMapping TypeName="GisDBModel.Image">
+        <MappingFragment StoreEntitySet="Image">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="URL" ColumnName="URL" />
+          <ScalarProperty Name="RealId" ColumnName="RealId" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="RealEstate">
+      <EntityTypeMapping TypeName="GisDBModel.RealEstate">
+        <MappingFragment StoreEntitySet="RealEstate">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="Title" ColumnName="Title" />
+          <ScalarProperty Name="Room" ColumnName="Room" />
+          <ScalarProperty Name="Msquare" ColumnName="Msquare" />
+          <ScalarProperty Name="Price" ColumnName="Price" />
+          <ScalarProperty Name="Tel" ColumnName="Tel" />
+          <ScalarProperty Name="Email" ColumnName="Email" />
+          <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+          <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+  </EntityContainerMapping>
+</Mapping>

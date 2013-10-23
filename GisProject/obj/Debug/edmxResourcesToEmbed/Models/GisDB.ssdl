@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="GisDBModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+  <EntityContainer Name="GisDBModelStoreContainer">
+    <EntitySet Name="Image" EntityType="GisDBModel.Store.Image" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="RealEstate" EntityType="GisDBModel.Store.RealEstate" store:Type="Tables" Schema="dbo" />
+    <AssociationSet Name="FK_Images_Images" Association="GisDBModel.Store.FK_Images_Images">
+      <End Role="RealEstate" EntitySet="RealEstate" />
+      <End Role="Image" EntitySet="Image" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="Image">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="URL" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="RealId" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="RealEstate">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="Title" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="Room" Type="int" Nullable="false" />
+    <Property Name="Msquare" Type="int" Nullable="false" />
+    <Property Name="Price" Type="money" Nullable="false" />
+    <Property Name="Tel" Type="nvarchar" Nullable="false" MaxLength="11" />
+    <Property Name="Email" Type="nvarchar" Nullable="false" MaxLength="50" />
+    <Property Name="Latitude" Type="float" Nullable="false" />
+    <Property Name="Longitude" Type="float" Nullable="false" />
+    <Property Name="Description" Type="nvarchar" Nullable="false" MaxLength="250" />
+  </EntityType>
+  <Association Name="FK_Images_Images">
+    <End Role="RealEstate" Type="GisDBModel.Store.RealEstate" Multiplicity="1" />
+    <End Role="Image" Type="GisDBModel.Store.Image" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="RealEstate">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Image">
+        <PropertyRef Name="RealId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema>
