@@ -1,0 +1,224 @@
+﻿@{
+    ViewBag.Title = "Izmir Open Classifieds GG";
+}
+@using Microsoft.Web.Helpers;
+@model GisProject.Models.RealEstate
+@section Scripts{
+
+<script src="@Url.Content("~/Scripts/jquery.unobtrusive-ajax.min.js")" type="text/javascript"> </script>
+<script src="@Url.Content("~/Scripts/jquery.validate.js")" type="text/javascript"> </script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")" type="text/javascript"> </script>
+
+<script type="text/javascript">
+    var map;
+    var infowindow;
+    var markerList = [];
+    function initialize() {
+        var minZoomLevel = 12;
+
+        map = new google.maps.Map(document.getElementById('map_canvas'), {
+            zoom: minZoomLevel,
+            center: new google.maps.LatLng(38.418850, 27.128720),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        // Bounds for Izmir
+        var strictBounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(38.3431570, 27.0171920),
+     new google.maps.LatLng(38.5067730, 27.3044150)
+     
+   );
+
+        // Listen for the dragend event
+        google.maps.event.addListener(map, 'dragend', function () {
+            if (strictBounds.contains(map.getCenter())) return;
+
+         var c = map.getCenter(),
+         x = c.lng(),
+         y = c.lat(),
+         maxX = strictBounds.getNorthEast().lng(),
+         maxY = strictBounds.getNorthEast().lat(),
+         minX = strictBounds.getSouthWest().lng(),
+         minY = strictBounds.getSouthWest().lat();
+
+            if (x < minX) x = minX;
+            if (x > maxX) x = maxX;
+            if (y < minY) y = minY;
+            if (y > maxY) y = maxY;
+
+            map.setCenter(new google.maps.LatLng(y, x));
+        });
+
+        // Limit the zoom level
+        google.maps.event.addListener(map, 'zoom_changed', function () {
+            if (map.getZoom() < minZoomLevel) map.setZoom(minZoomLevel);
+        });
+    }
+
+    function getRandom() {
+        $.getJSON("/RealEstate/Random", function (data) {
+            for (var i = 0; i < data.length; i++) {
+                addMarker(data[i]);
+            }
+        });
+
+    }
+    function addMarker(item) {
+         marker = new google.maps.Marker({ position: new google.maps.LatLng(item.Latitude, item.Longitude),
+            title: item.Title
+        });
+        google.maps.event.addListener(marker, 'click', function (event) {
+            if (!infowindow) {
+                infowindow = new google.maps.InfoWindow();
+            }
+            var content = '<p><a id=' + item.Id + '" href="#" title="' + item.Title + '" onclick="showDetails('+item.Id+',\''+item.Title+'\')">' + item.Title + '</a></p>';
+            content += '<p>' + item.Description + '</p>';
+            content += '<strong>' + item.Price + ' $ / ' + item.Status + '</strong></br>';
+            infowindow.setContent(content);
+            infowindow.open(map, this);
+        });
+        marker.setMap(map);
+        markerList.push(marker);
+    }
+    function clearOverlays() {
+        if (markerList) {
+            for (i in markerList) {
+                markerList[i].setMap(null);
+            }
+        }
+    }
+    function deleteOverlays() {
+        if (markerList) {
+            for (i in markerList) {
+                markerList[i].setMap(null);
+            }
+            markerList.length = 0;
+        }
+    }
+    
+    function searchRealEstate(data) {
+        if (data.length != 0) {
+            //$("#captcha").hide();
+            //$("#captchac").hide();
+            deleteOverlays();
+            $("#searchAds").slideUp(200);
+            for (var i = 0; i < data.length; i++) {
+                addMarker(data[i]);
+            }     
+        }
+        else 
+            alert('not found any real estate with your criterias');
+    }
+    var createMarker;
+    function createRealEstate(data) {
+        createMarker.setMap(null);
+        if (data.Price != 0) {
+            $("#createAds").slideUp(200);
+           // $("#captchac").hide();
+           // $("#captcha").hide();
+            addMarker(data);
+            google.maps.event.trigger(markerList[markerList.length -1], 'click');
+        }
+    }
+    $(document).ready(function () {
+        initialize();
+
+        getRandom();
+        @*$("#captcha").html($("#captchac").clone(true, true));*@
+        var createAds = $("#createAds");
+        var searchAds = $("#searchAds");
+        $("#create").on("click", function () {
+            
+            searchAds.hide();
+            createAds.slideDown(200);
+            //clear map
+            deleteOverlays();
+            createMarker = new google.maps.Marker({
+                position: map.getCenter(),
+                title: 'Set this to yours real estate position'
+            });
+            createMarker.setMap(map);
+            createMarker.setDraggable(true);
+            google.maps.event.addListener(createMarker, 'dragend', function (event) {
+
+                $("input[name=Latitude]").val(this.getPosition().lat());
+                $("input[name=Longitude]").val(this.getPosition().lng());
+            });
+            markerList.push(createMarker);
+            
+           //console.log("Create pressed...");
+        });
+        $("#search").on("click", function () {
+            createAds.hide();
+            searchAds.slideDown(200);
+            //clear map
+            deleteOverlays();
+            //console.log("Search pressed...");
+        });
+        
+    });
+    function showDetails(Id,Title) {
+        var source = "/RealEstate/Details/" + Id;
+        $("#modalPop").load(source).dialog({autoOpen:true,title:Title,width:550,height:400});
+
+    }
+</script>
+}
+<div id="modalPop" style="display:none;">
+
+</div>
+<div id="navigation">
+@using (Ajax.BeginForm(new AjaxOptions { HttpMethod = "POST", Url = Url.Action("Create", "RealEstate"), OnSuccess = "createRealEstate" }))
+{
+<div id="createAds" style="display:none">
+<fieldset>
+<legend>Create Real Estate</legend>
+@Html.ValidationSummary()
+<div style="float:right; width:250px;">Fill the related fields and set your real estate's position via map</div>
+<div>@Html.LabelFor(m => m.Title)</div><div>@Html.TextBoxFor(m => m.Title)</div> 
+<div>@Html.LabelFor(m => m.Email)</div><div> @Html.TextBoxFor(m => m.Email)</div>
+<div>@Html.LabelFor(m => m.Msquare) </div><div>@Html.TextBoxFor(m => m.Msquare)</div>
+<div>@Html.LabelFor(m => m.Room) </div><div> @Html.TextBoxFor(m => m.Room)</div>
+@Html.HiddenFor(m => m.Latitude)
+@Html.HiddenFor(m => m.Longitude)
+<div>Telephone</div><div> @Html.TextBoxFor(m => m.Tel)</div>
+<div>@Html.Label("Status") </div><div>@Html.DropDownList("Status", new List<SelectListItem> { new SelectListItem { Text = "Sale", Value = bool.FalseString, Selected = true }, new SelectListItem { Text = "Rent", Value = bool.TrueString } })</div>
+<div> @Html.LabelFor(m => m.Price) </div><div>@Html.TextBoxFor(m => m.Price)</div>
+<div> @Html.LabelFor(m => m.Description)</div><div> @Html.TextAreaFor(m => m.Description, new { style = "height:40px; width:300px;" })</div>
+<div>Images URLs Max(3)</div>
+<ul id="imgURL" style="list-style:none;">
+    <li style=" margin:3px;">@Html.TextBox("URL")</li>
+    <li style=" margin:3px;">@Html.TextBox("URL")</li>
+    <li style=" margin:3px;">@Html.TextBox("URL")</li>
+</ul>
+@*
+@if (!Convert.ToBoolean(Session["valid"]))
+{
+    <div id="captchac"> @{ ReCaptcha.PublicKey = "6LfdhtASAAAAAHCSSES1HrHsD5kGLfL2z0Fh5DbA"; } @ReCaptcha.GetHtml(theme: "clean")</div>
+}*@
+<div><input type="submit" id="createReal" value="Create" /></div>
+</fieldset>
+</div>
+
+}
+@using (Ajax.BeginForm(new AjaxOptions { HttpMethod = "POST", Url = Url.Action("Search", "RealEstate"), OnSuccess = "searchRealEstate" }))
+{ 
+<div id="searchAds" style="display:none;">
+<h1 style="margin:10px;">Search</h1>
+<ul style="list-style:none;">
+    <li style="float:left; width:100px; text-align:center"><div>Max @Html.LabelFor(m => m.Price) @Html.TextBoxFor(m => m.Price, new { style = "width:75px", @Value = "200000" })</div></li>
+    <li style="float:left; width:100px; text-align:center"><div>Min @Html.LabelFor(m => m.Room) @Html.TextBoxFor(m => m.Room, new { style = "width:75px", @Value = "0" })</div></li>
+    <li style="float:left; width:100px; text-align:center"><div> @Html.Label("Status") @Html.DropDownList("Status", new List<SelectListItem> { new SelectListItem { Text = "Sale", Value = "0", Selected = true }, new SelectListItem { Text = "Rent", Value = "1" } })</div></li>
+    <li style="float:left; width:100px; text-align:center"><div>Min M^2 @Html.TextBoxFor(m => m.Msquare, new { style = "width:75px", @Value = "0" })</div></li>
+     
+     <li style="float:left; width:70px; margin:10px 0 0 0;"><input type="submit" id="submitForm" value="Search" /></li>
+    <li style="float:right; width:270px; margin:10px 0 0 0;">@Html.ValidationSummary()</li>
+</ul>
+<div style="clear:both;"></div>
+   @* <div id="captcha"></div>*@
+</div>
+}
+</div>
+<div id="map_canvas" style="width : 100%; height : 500px; margin : 0px; padding : 0px; margin-right:20px;"></div>
+
+

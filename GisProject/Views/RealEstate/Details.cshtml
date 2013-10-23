@@ -1,0 +1,25 @@
+﻿@{
+    Layout = null;
+}
+@model GisProject.Models.RealEstate
+@using GisProject.Models;
+ @if(@Model != null)
+{
+<ul style="list-style:none;">
+@foreach (Image img in Model.images)
+{
+   <li style="float:left; width:160px; height:120px"><a href="@img.URL" target="_blank"><img src="@img.URL" alt="" width="160" height="120" /></a></li> 
+}
+</ul>
+<div style="clear:both;"></div>
+<div style="font-size:11px">@Model.Description</div>
+<div style="margin:10px;font-size:13px">Rooms :  @Model.Room , M<sup>2</sup> :  @Model.Msquare , <strong>Price : </strong> @Model.Price.ToString("C",System.Globalization.CultureInfo.GetCultureInfo("en-US")) / @((Convert.ToBoolean(Model.Status)) ? "Rent" : "Sale") </div>
+<div style="margin:10px;">
+   <h3>Contact</h3> 
+</div>
+<div style="margin:10px;font-size:13px">
+    E-Mail : @Model.Email, Telephone : @Model.Tel
+</div>
+<div style="margin:10px;"><h3>Coordinates</h3></div>
+<div style="margin:10px;font-size:13px">Latitude : @Model.Latitude, Longitude : @Model.Longitude</div>
+}
